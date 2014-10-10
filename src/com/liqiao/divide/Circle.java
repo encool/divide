@@ -10,7 +10,7 @@ import android.opengl.GLES20;
 import com.liqiao.divide.utility.ShaderUtil;
 
 public class Circle {
-	public Circle(float radius,float xCircle, float yCircle, float zCircle,int precision) {
+	public Circle(float d,float xCircle, float yCircle, float zCircle,int precision) {
 		super();
 		this.xCircle = xCircle;
 		this.yCircle = yCircle;
@@ -18,7 +18,7 @@ public class Circle {
 		this.nPrecision=precision;
 
 		vertexes=new float[nPrecision*3];
-		this.radius=radius;
+		this.radius=d;
 		initShader();
 		initVertexDate();
 	}
@@ -29,7 +29,7 @@ public class Circle {
 	int nPrecision=36;
 	public static float[] mProjMatrix =new float[16];
 	public static float[] mVMatrix=new float[16];
-	public static float[] mMVPMatrix;
+	public static float[] mMVPMatrix=new float[16];
 	public static float[] vertexes;
 	float color[] = { 0.63671875f, 0.76953125f, 0.22265625f, 1.0f };
 	int mProgram;
@@ -45,9 +45,10 @@ public class Circle {
 	int xAngle=0;
 	
 	private final String vertexShaderCode =
+			"uniform mat4 uMVPMatrix;"+
 		    "attribute vec4 vPosition;" +
 		    "void main() {" +
-		    "  gl_Position = vPosition;" +
+		    "  gl_Position = uMVPMatrix*vPosition;" +
 		    "}";
 
 		private final String fragmentShaderCode =
@@ -72,6 +73,7 @@ public class Circle {
 	    GLES20.glLinkProgram(mProgram);                  // creates OpenGL ES program executables
 	    maPositionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
 	    maColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
+	    muMVPMatrixHandle =  GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
 	}
 	private void initVertexDate() {
 		// TODO Auto-generated method stub
@@ -103,7 +105,7 @@ public class Circle {
 
 	    // Enable a handle to the triangle vertices
 	    GLES20.glEnableVertexAttribArray(maPositionHandle);
-
+	    GLES20.glUniformMatrix4fv(muMVPMatrixHandle, 1, false, mMVPMatrix, 0);
 	    // Prepare the triangle coordinate data
 	    GLES20.glVertexAttribPointer(maPositionHandle, 3,
 	                                 GLES20.GL_FLOAT, false,
@@ -114,10 +116,10 @@ public class Circle {
 	    GLES20.glUniform4fv(maColorHandle, 1, color, 0);
 
 	    // Draw the triangle
-	    GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, nPrecision);
+	    GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, 0, nPrecision);
 
 	    // Disable vertex array
-	    GLES20.glDisableVertexAttribArray(maPositionHandle);
+//	    GLES20.glDisableVertexAttribArray(maPositionHandle);
 	}
 	
 }
