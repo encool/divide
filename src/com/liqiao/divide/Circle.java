@@ -116,7 +116,7 @@ public class Circle {
 	    GLES20.glUniform4fv(maColorHandle, 1, color, 0);
 
 	    // Draw the triangle
-	    GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, 0, nPrecision);
+	    GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, nPrecision);
 
 	    // Disable vertex array
 //	    GLES20.glDisableVertexAttribArray(maPositionHandle);
