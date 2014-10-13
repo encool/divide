@@ -1,6 +1,7 @@
 package com.liqiao.divide;
 
 import android.app.Activity;
+import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -11,6 +12,7 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mv=new MyGLSurfaceView(this);
+//		mv.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 		setContentView(mv);
 	}
 

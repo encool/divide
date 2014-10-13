@@ -5,14 +5,18 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 import android.opengl.GLES20;
+import android.opengl.GLSurfaceView;
+import android.opengl.GLSurfaceView.Renderer;
+import android.util.Log;
 
+import com.liqiao.divide.MyGLSurfaceView.MyGLRenderer;
 import com.liqiao.divide.utility.ShaderUtil;
 
 public class AnimationOneToFour {
 
 	int precision;//园的圆滑度
 	int position;//1 right top;2 r.b.;3 l.b.; 4 l.t.;
-	int degreeMark=99;//1 to 100 
+	int degreeMark=0;//1 to 100 
 	float xFrom;
 	float yFrom;
 	float zFrom;
@@ -38,8 +42,8 @@ public class AnimationOneToFour {
 	FloatBuffer mColorBuffer;
 	int vCount=0;
 	int xAngle=0;
-	
-	public AnimationOneToFour(float xFrom, float yFrom, float zFrom,
+	GLSurfaceView glSurfaceView;
+	public AnimationOneToFour(Renderer myGLRenderer, float xFrom, float yFrom, float zFrom,
 			float radiusFrom,int position,int precision) {
 		super();
 		this.xFrom = xFrom;
@@ -48,7 +52,8 @@ public class AnimationOneToFour {
 		this.radiusFrom = radiusFrom;
 		this.position=position;
 		this.precision=precision;
-		vertexes=new float[4*precision*4];
+		this.glSurfaceView=myGLRenderer;
+		vertexes=new float[4*(3*precision*4+6)];
 		initShader();
 		initVertexDate();
 	}
@@ -69,8 +74,10 @@ public class AnimationOneToFour {
 	    GLES20.glUniform4fv(maColorHandle, 1, color, 0);
 
 	    // Draw the triangle
-	    GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, 0, precision*4+2);
-
+	    GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, precision*4+2);
+	    GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, precision*4+2, precision*4+2);
+	    GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 2*(precision*4+2), precision*4+2);
+	    GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 3*(precision*4+2), precision*4+2);
 	    // Disable vertex array
 //	    GLES20.glDisableVertexAttribArray(maPositionHandle);
 	}
@@ -112,7 +119,10 @@ public class AnimationOneToFour {
 		}
 		private void initVertexDate() {
 			// TODO Auto-generated method stub
-			generateVertex();
+			generateVertex(1);
+			generateVertex(2);
+			generateVertex(3);
+			generateVertex(4);
 	        ByteBuffer bb = ByteBuffer.allocateDirect(
 	        // (# of coordinate values * 4 bytes per float)
 	                vertexes.length * 4);
@@ -121,11 +131,11 @@ public class AnimationOneToFour {
 	        mVertexBuffer.put(vertexes);
 	        mVertexBuffer.position(0);
 		}
-		private void calculateNewCoords(){		
+		private void calculateNewCoords(int position2){		
 			radiusNew=radiusFrom/2;
 			float radiusSmaDiff=radiusSmaFrom-radiusNew;
 			float coodsDiff=(float) (radiusSmaDiff/Math.sqrt(2));
-			switch(position){
+			switch(position2){
 			case 1://第一象限的点
 				xNew=xFrom+radiusNew;
 				yNew=yFrom+radiusNew;
@@ -161,13 +171,13 @@ public class AnimationOneToFour {
 				break;
 			}
 		}
-		private void generateVertex() {
+		private void generateVertex(int position) {
 			// TODO Auto-generated method stub
-			calculateNewCoords();
-			calculateBigPart();
-			catculateSmaPart();
+			calculateNewCoords(position);
+			calculateBigPart(position);
+			catculateSmaPart(position);
 		}
-		private void catculateSmaPart() {
+		private void catculateSmaPart(int position2) {
 			// TODO Auto-generated method stub
 			float ratio=degreeMark/100f;
 			currentSmaradius=radiusSmaFrom-(radiusSmaFrom-radiusNew)*ratio;
@@ -177,7 +187,7 @@ public class AnimationOneToFour {
 			float angleStart = 0;
 			float angleEnd = 0;
 			float angle;
-			switch(position){
+			switch(position2){
 			case 1:
 				angle=(float) Math.acos((currentSmaY-yFrom)/currentSmaradius);
 				angleStart=(float) (Math.PI+angle);
@@ -210,8 +220,9 @@ public class AnimationOneToFour {
 				vertexes[vertexesMark++]=y;
 				vertexes[vertexesMark++]=z;
 			}
+			Log.i("vertexNum", String.valueOf(vertexesMark));
 		}
-		private void calculateBigPart() {
+		private void calculateBigPart(int position2) {
 			// TODO Auto-generated method stub
 			float ratio=degreeMark/100f;
 			currentBigradius=radiusFrom-radiusNew*ratio;//为了达到平滑的效果此处可以做出更好的更改
@@ -221,7 +232,7 @@ public class AnimationOneToFour {
 			float angleStart = 0;
 			float angleEnd = 0;
 			float angle;
-			switch(position){
+			switch(position2){
 			case 1://第一象限的点
 				angle=(float) Math.acos((currentBigY-yFrom)/currentBigradius);
 				angleStart=(float) (-Math.PI/2+angle);
@@ -254,5 +265,25 @@ public class AnimationOneToFour {
 				vertexes[vertexesMark++]=y;
 				vertexes[vertexesMark++]=z;
 			}
+			Log.i("vertexNum", String.valueOf(vertexesMark));
+		}
+		public class ChangeThread implements Runnable{
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				while(degreeMark<101){
+					degreeMark=degreeMark+1;
+					draw();
+					try {
+						Thread.sleep(200);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+
+			}
+			
 		}
 }

@@ -7,6 +7,7 @@ import android.opengl.EGLConfig;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+import android.os.Handler;
 
 public class MyGLSurfaceView extends GLSurfaceView {
     public MyGLSurfaceView(Context context){
@@ -53,7 +54,8 @@ public class MyGLSurfaceView extends GLSurfaceView {
 			// TODO Auto-generated method stub
 			GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 			circle=new Circle(0.4f,0,0,0,36);
-			ani=new AnimationOneToFour(0f, 0f, 0f, 1f, 1, 12);
+			ani=new AnimationOneToFour(this,0f, 0f, 0f, 0.4f, 1, 12);
+			new Thread((ani.new ChangeThread())).start();
 //			ani2=new AnimationOneToFour(0f, 0f, 0f, 0.4f, 2, 12);
 //			ani3=new AnimationOneToFour(0f, 0f, 0f, 0.4f, 3, 12);
 			Matrix.setLookAtM(mVMatrix, 0, 0, 0, -3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
